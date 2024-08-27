@@ -57,20 +57,13 @@ proc toStrTuple*(tag: TagPtr): string =
   var res = (nptr:tag.nptr, idx:tag.idx)
   return $res
 
-proc fetchAddSlot(tag: TagPtr; w: uint): uint =
-  ## A convenience to fetchAdd the node's slot.
-  if tag == 0:
-    raise AssertionDefect.newException "tagptr was empty"
-  else:
-    result = fetchAddSlot(tag.node, idx tag, w)
-
-proc fetchTail(queue: LoonyQueue, moorder: MemoryOrder = moRelaxed): TagPtr =
+proc fetchTail(queue: LoonyQueue): TagPtr =
   ## get the TagPtr of the tail (nptr: NodePtr, idx: uint16)
-  TagPtr load(queue.tail, order = moorder)
+  TagPtr load(queue.tail, order = moRelaxed)
 
-proc fetchHead(queue: LoonyQueue, moorder: MemoryOrder = moRelaxed): TagPtr =
+proc fetchHead(queue: LoonyQueue): TagPtr =
   ## get the TagPtr of the head (nptr: NodePtr, idx: uint16)
-  TagPtr load(queue.head, order = moorder)
+  TagPtr load(queue.head, order = moRelaxed)
 
 proc fetchCurrTail(queue: LoonyQueue): NodePtr {.used.} =
   # get the NodePtr of the current tail
@@ -80,20 +73,20 @@ proc fetchCurrTail(queue: LoonyQueue): NodePtr {.used.} =
 # imported std/atomics or we export atomics.
 # For the sake of not polluting the users namespace I have changed these into procs.
 # Atomic inc of idx in (nptr: NodePtr, idx: uint16)
-proc fetchIncTail(queue: LoonyQueue, moorder: MemoryOrder = moAcquire): TagPtr =
-  cast[TagPtr](queue.tail.fetchAdd(1, order = moorder))
-proc fetchIncHead(queue: LoonyQueue, moorder: MemoryOrder = moAcquire): TagPtr =
-  cast[TagPtr](queue.head.fetchAdd(1, order = moorder))
+proc fetchIncTail(queue: LoonyQueue): TagPtr =
+  cast[TagPtr](queue.tail.fetchAdd(1, order = moAcquire))
+proc fetchIncHead(queue: LoonyQueue): TagPtr =
+  cast[TagPtr](queue.head.fetchAdd(1, order = moAcquire))
 
-proc compareAndSwapTail(queue: LoonyQueue, expect: var uint, swap: uint | TagPtr): bool =
-  queue.tail.compareExchange(expect, swap)
+proc compareAndSwapTail(queue: LoonyQueue; expect: var uint; swap: uint | TagPtr): bool =
+  queue.tail.compareExchange(expect, swap, moRelease, moRelaxed)
 
-proc compareAndSwapHead(queue: LoonyQueue, expect: var uint, swap: uint | TagPtr): bool =
-  queue.head.compareExchange(expect, swap)
+proc compareAndSwapHead(queue: LoonyQueue; expect: var uint; swap: uint | TagPtr): bool =
+  queue.head.compareExchange(expect, swap, moRelease, moRelaxed)
 
-proc compareAndSwapCurrTail(queue: LoonyQueue, expect: var uint,
+proc compareAndSwapCurrTail(queue: LoonyQueue; expect: var uint;
                             swap: uint | TagPtr): bool {.used.} =
-  queue.currTail.compareExchange(expect, swap)
+  queue.currTail.compareExchange(expect, swap, moRelease, moRelaxed)
 
 proc `=destroy`*[T](x: var LoonyQueueImpl[T]) =
   ## Destroy is completely operated on the basis that no other threads are
@@ -191,7 +184,7 @@ proc advTail[T](queue: LoonyQueue[T]; pel: uint; tag: TagPtr): AdvTail =
         result = AdvOnly
         break done
       # Get current tails next node
-      var next = origTail.fetchNext()
+      var next = fetchNext(origTail, moRelaxed)
       if cast[ptr Node](next).isNil():
         # Prepare the new node with our element in it
         var node = allocNode pel
@@ -242,7 +235,7 @@ proc advHead(queue: LoonyQueue; curr, h, t: var TagPtr): AdvHead =
       incrDeqCount h.node
       QueueEmpty
     else:
-      var next = fetchNext h.nptr
+      var next = fetchNext(h.nptr, moAcquire)
       # Equivalent to (nptr: NodePtr, idx: idx+=1)
       curr += 1
       block done:
@@ -297,12 +290,12 @@ proc pushImpl[T](queue: LoonyQueue[T], el: sink T,
     atomicThreadFence(ATOMIC_RELEASE)
   while true:
     # Enq proc begins with incr the index of node in TagPtr
-    var tag = fetchIncTail(queue)
+    var tag = queue.fetchIncTail()
     if likely(tag.idx < N):
       # FAST PATH OPERATION - 99% of push will enter here; we want the minimal
       # amount of necessary operations in this path.
       # Perform a FAA on our reserved slot which should be 0'd.
-      let prev = tag.fetchAddSlot pel
+      let prev = fetchAddSlot(tag.node, tag.idx, pel, moAcquire)
       case prev
       of 0, RESUME:
         break           # the slot was empty; we're good to go
@@ -353,8 +346,8 @@ proc isEmptyImpl(head, tail: TagPtr): bool =
 proc isEmpty*(queue: LoonyQueue): bool =
   ## This operation should only be used by internal code. The response for this
   ## operation is not precise.
-  let head = fetchHead queue
-  let tail = fetchTail queue
+  let head = queue.fetchHead()
+  let tail = queue.fetchTail()
   isEmptyImpl(head, tail)
 
 proc popImpl[T](queue: LoonyQueue[T]; forcedCoherence: static bool = false): T =
@@ -362,8 +355,8 @@ proc popImpl[T](queue: LoonyQueue[T]; forcedCoherence: static bool = false): T =
   while true:
     # Before incr the deq index, init check performed to determine if queue is empty.
     # Ensure head is loaded last to keep mem hot
-    var tail = fetchTail queue
-    var curr = fetchHead queue
+    var tail = queue.fetchTail()
+    var curr = queue.fetchHead()
     if isEmptyImpl(curr, tail):
       # Queue was empty; nil can be caught in cps w/ "while cont.running"
       when T is ref or T is ptr:
@@ -374,7 +367,7 @@ proc popImpl[T](queue: LoonyQueue[T]; forcedCoherence: static bool = false): T =
     var head = queue.fetchIncHead()
     if likely(head.idx < N):
       # FAST PATH OPS
-      var prev = head.fetchAddSlot READER
+      var prev = fetchAddSlot(head.node, head.idx, READER, moRelease)
       # Last slot in a node - init reclaim proc; if WRITER bit set then upper bits
       # contain a valid pointer to an enqd el that can be returned (see enqueue)
       if not unlikely((prev and SLOTMASK) == 0):

@@ -94,14 +94,11 @@ proc prepareElement*[T](el: var T): uint =
   result = cast[uint](el) or WRITER
   wasMoved el
 
-proc fetchNext*(node: var Node, moorder: MemoryOrder = moAcquireRelease): NodePtr =
-  load(node.next, order = moorder)
-
-proc fetchNext*(node: NodePtr, moorder: MemoryOrder = moAcquireRelease): NodePtr =
+proc fetchNext*(node: NodePtr; moorder: MemoryOrder): NodePtr =
   # get the NodePtr to the next Node, can be converted to a TagPtr of (nptr: NodePtr, idx: 0'u16)
-  fetchNext(node.toNode)
+  load(node.toNode.next, order = moorder)
 
-proc fetchAddSlot*(t: var Node, idx: uint16, w: uint, moorder: MemoryOrder = moAcquireRelease): uint =
+proc fetchAddSlot*(t: var Node, idx: uint16, w: uint, moorder: MemoryOrder): uint =
   ## Fetches the pointer to the object in the slot while atomically
   ## increasing the value by `w`.
   ##
@@ -111,11 +108,10 @@ proc fetchAddSlot*(t: var Node, idx: uint16, w: uint, moorder: MemoryOrder = moA
   t.slots[idx].fetchAdd(w, order = moorder)
 
 proc compareAndSwapNext*(t: var Node, expect: var uint, swap: uint): bool =
-  t.next.compareExchange(expect, swap, moRelaxed) # MO as per cpp impl
+  t.next.compareExchange(expect, swap, moRelease, moRelaxed)
 
 proc compareAndSwapNext*(t: NodePtr, expect: var uint, swap: uint): bool =
-  # cpp impl is Relaxed; we use Release here to remove tsan warning
-  (toNode t).next.compareExchange(expect, swap, moRelease)
+  (toNode t).next.compareExchange(expect, swap, moRelease, moRelaxed)
 
 proc `=destroy`*(n: var Node) =
   decDebugCounter()
@@ -137,8 +133,7 @@ proc tryReclaim*(node: var Node; start: uint16) =
     for i in start..<N:
       template s: Atomic[uint] = node.slots[i]
       if (s.load(order = moAcquire) and CONSUMED) != CONSUMED:
-        # cpp impl is Relaxed; we use Release here to remove tsan warning
-        var prev = s.fetchAdd(RESUME, order = moRelease) and CONSUMED
+        var prev = s.fetchAdd(RESUME, order = moRelaxed) and CONSUMED
         if prev != CONSUMED:
           incRecPathCounter()
           break done
@@ -148,9 +143,7 @@ proc tryReclaim*(node: var Node; start: uint16) =
       incReclaimCounter()
 
 proc incrEnqCount*(node: var Node; final: uint16 = 0) =
-  var mask =
-    node.ctrl.fetchAddTail:
-      (final.uint32 shl 16) + 1
+  var mask = node.ctrl.fetchAddTail((final.uint32 shl 16) + 1)
   template finalCount: uint16 =
     if final == 0:
       getHigh mask
@@ -165,9 +158,7 @@ proc incrEnqCount*(node: var Node; final: uint16 = 0) =
 
 proc incrDeqCount*(node: var Node; final: uint16 = 0) =
   incDeqPathCounter()
-  var mask =
-    node.ctrl.fetchAddHead:
-      (final.uint32 shl 16) + 1
+  var mask = node.ctrl.fetchAddHead((final.uint32 shl 16) + 1)
   template finalCount: uint16 =
     if final == 0:
       getHigh mask
