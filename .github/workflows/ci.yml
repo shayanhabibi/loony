@@ -122,7 +122,9 @@ jobs:
           balls --path="." --cc:clang --gc:arc --backend:c --define:danger --define:release
 
       - name: Build docs
-        if: ${{ matrix.docs }} == 'true'
+        if: >
+          github.event_name == 'push' && github.ref == 'refs/heads/main' &&
+          matrix.os == 'ubuntu-latest' && matrix.compiler.version == 'version-2-0'
         run: |
           branch=${{ github.ref }}
           branch=${branch##*/}
@@ -141,7 +143,7 @@ jobs:
       - name: Publish docs
         if: >
           github.event_name == 'push' && github.ref == 'refs/heads/main' &&
-          matrix.os == 'ubuntu-latest' && matrix.nim == 'version-2-0'
+          matrix.os == 'ubuntu-latest' && matrix.compiler.version == 'version-2-0'
         uses: crazy-max/ghaction-github-pages@v3.1.0
         with:
           build_dir: project/docs
