@@ -30,13 +30,14 @@ setLogFilter:
 var q: LoonyQueue[Continuation]
 
 proc runThings() {.thread.} =
-  while true:
-    var job = pop q
-    if job.dismissed:
-      break
-    else:
-      while job.running:
-        job = trampoline job
+  {.gcsafe.}:
+    while true:
+      var job = pop q
+      if job.dismissed:
+        break
+      else:
+        while job.running:
+          job = trampoline job
 
 proc enqueue(c: C): C {.cpsMagic.} =
   check not q.isNil
@@ -61,7 +62,7 @@ else:
     var x = Timespec(tv_sec: 0.Time, tv_nsec: ns)
     var y: Timespec
     if 0 != nanosleep(x, y):
-      raise
+      fail "nanosleep fail"
     c
 
 proc doContinualThings() {.cps: C.} =
