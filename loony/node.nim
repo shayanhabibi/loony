@@ -69,6 +69,17 @@ else:
   template incEnqPathCounter*(): untyped = discard
   template incDeqPathCounter*(): untyped = discard
 
+template prn*(idx: uint16): uint16 =
+  ## prn = 'Pro re nata' - when required
+  ## Provides the actual index depending on
+  ## if we are rotating the index or not.
+  when loonyRotate:
+    # multiply by cacheLineSize, mod by loonySlotCount
+    # then add idx*cacheLineSize/loonySlotCount
+    (idx shl lShiftBits) and (loonySlotCount - 1) or (idx shr rShiftBits)
+  else:
+    idx
+
 template toNodePtr*(pt: uint | ptr Node): NodePtr =
   # Convert ptr Node into NodePtr uint
   cast[NodePtr](pt)
@@ -105,7 +116,7 @@ proc fetchAddSlot*(t: var Node, idx: uint16, w: uint, moorder: MemoryOrder): uin
   ## Remembering that the pointer has 3 tail bits clear; these are
   ## reserved and increased atomically to indicate RESUME, READER, WRITER
   ## statuship.
-  t.slots[idx].fetchAdd(w, order = moorder)
+  t.slots[prn idx].fetchAdd(w, order = moorder)
 
 proc compareAndSwapNext*(t: var Node, expect: var uint, swap: uint): bool =
   t.next.compareExchange(expect, swap, moRelease, moRelaxed)
@@ -131,7 +142,7 @@ proc allocNode*[T](pel: T): ptr Node =
 proc tryReclaim*(node: var Node; start: uint16) =
   block done:
     for i in start..<N:
-      template s: Atomic[uint] = node.slots[i]
+      template s: Atomic[uint] = node.slots[prn i]
       if (s.load(order = moAcquire) and CONSUMED) != CONSUMED:
         var prev = s.fetchAdd(RESUME, order = moRelaxed) and CONSUMED
         if prev != CONSUMED:
