@@ -9,7 +9,7 @@ const
   ## owner.  Note that in particular, child Continuations have cycles,
   ## which will trigger a failure of this assertion.
 
-  loonyRotate* {.booldefine.} = false ## Indicate that loony should rotate
+  loonyRotate* {.booldefine.} = true ## Indicate that loony should rotate
   ## the slots in the queue to avoid contention on the same cache line.
   ## This is useful when the queue is shared between multiple threads.
   ## Note that this will only work if the number of slots is a power of 2.
