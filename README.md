@@ -104,7 +104,7 @@ tests and further documentation are to follow when time allows.
 
 [The full API documentation is kept up-to-date on GitHub.](https://nim-works.github.io/loony/loony.html)
 
-[The API documentation for the Ward submodule is found here.](https://nim-works.github.io/loony/loony/ward.html)
+[~~The API documentation for the Ward submodule is found here.~~](https://nim-works.github.io/loony/loony/ward.html) ~~*Wards are untested and are unlikely to remain in the library*~~
 
 #### Memory Safety & Cache Coherence
 
@@ -113,6 +113,19 @@ primitives such as `atomic_thread_fence` to ensure a CPU's store buffer is
 committed on the push operation and read on the pop operation; this is a
 higher-cost primitive. You can use `unsafePush` and `unsafePop` to manipulate
 a `LoonyQueue` without regard to cache coherency for ultimate performance.
+
+The LoonyQueue itself is padded across cachelines, and by default, the slots
+are read and written to in a cyclic fashion over cachelines to reduce false
+sharing.
+
+```
+Visual representation of rotating index
+
+| 64 bytes | 64 bytes | 64 bytes |...
+| 0------- | 1------- | 2------- |...
+| -63------| -64------| -65------|...
+|--127-----|--128-----|--129-----|...
+```
 
 ### Debugging
 
@@ -140,7 +153,19 @@ debugNodeCounter:
 We recommend against changing these values unless you know what you are doing. The suggested max alignment is 16 to achieve drastically higher contention capacities. Compilation will fail if your alignment does not fit the slot count index.
 
 `-d:loonyNodeAlignment=11` - Adjust node alignment to increase/decrease contention capacity
+
 `-d:loonySlotCount=1024` - Adjust the number of slots in each node
+
+`-d:loonyDebug=false` - Toggle debug counters and templates, see
+[debugging](#debugging). False by default.
+
+`-d:loonyRotate=true` - Toggle the index for the slots of
+loony queue to be read over cacheline bounds in a cyclic
+manner. True by default.
+
+> While loonyRotate is enabled, the slot count must be a
+> power of 2. Error messages will indicate whether this
+> is a cause of compilation failure.
 
 ## What are Continuations?
 
