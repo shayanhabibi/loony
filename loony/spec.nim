@@ -24,6 +24,8 @@ when loonyRotate:
 static:
   doAssert (1 shl loonyNodeAlignment) > loonySlotCount,
     "Your LoonySlot count exceeds your alignment!"
+  doAssert loonySlotCount > 1,
+    "Your LoonySlot count must be greater than 1!"
   when loonyRotate:
     doAssert (loonySlotCount and (loonySlotCount - 1)) == 0,
       fmt"Your LoonySlot count of {loonySlotCount} is not a power of 2!" &
