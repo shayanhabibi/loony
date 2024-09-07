@@ -1,7 +1,7 @@
-import std/[atomics, math]
+import std/[atomics, math, strformat]
 
 const
-  loonyNodeAlignment {.intdefine.} = 11
+  loonyNodeAlignment* {.intdefine.} = 11
   loonySlotCount* {.intdefine.} = 1024
 
   loonyIsolated* {.booldefine.} = false  ## Indicate that loony should
@@ -15,7 +15,7 @@ const
   ## Note that this will only work if the number of slots is a power of 2.
 
 when loonyRotate:
-  # Impl dynamic cache line size detection
+  # TODO Impl dynamic cache line size detection
   const
     cacheLineSize = 64
     lShiftBits* = int log2(float cacheLineSize)
@@ -26,7 +26,9 @@ static:
     "Your LoonySlot count exceeds your alignment!"
   when loonyRotate:
     doAssert (loonySlotCount and (loonySlotCount - 1)) == 0,
-      "LoonySlot count must be a power of 2!"
+      fmt"Your LoonySlot count of {loonySlotCount} is not a power of 2!" &
+      " Either disable loonyRotate (-d:loonyRotate=false) or" &
+      " change the slot count."
 
 const
   ## Slot flag constants
