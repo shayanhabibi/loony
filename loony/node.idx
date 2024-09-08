@@ -1,0 +1,39 @@
+nimTitle	node	loony/node.html	module loony/node		0
+nim	Node	loony/node.html#Node	object Node		9
+nim	nodeCounter	loony/node.html#nodeCounter	var nodeCounter		19
+nim	reclaimCounter	loony/node.html#reclaimCounter	var reclaimCounter		20
+nim	recPathCounter	loony/node.html#recPathCounter	var recPathCounter		21
+nim	enqCounter	loony/node.html#enqCounter	var enqCounter		22
+nim	deqCounter	loony/node.html#deqCounter	var deqCounter		23
+nim	enqPathCounter	loony/node.html#enqPathCounter	var enqPathCounter		24
+nim	deqPathCounter	loony/node.html#deqPathCounter	var deqPathCounter		25
+nim	echoDebugNodeCounter	loony/node.html#echoDebugNodeCounter	proc echoDebugNodeCounter()		31
+nim	debugNodeCounter	loony/node.html#debugNodeCounter.t,untyped	template debugNodeCounter(body: untyped)		35
+nim	incDebugCounter	loony/node.html#incDebugCounter.t	template incDebugCounter(): untyped		52
+nim	decDebugCounter	loony/node.html#decDebugCounter.t	template decDebugCounter(): untyped		53
+nim	incReclaimCounter	loony/node.html#incReclaimCounter.t	template incReclaimCounter(): untyped		54
+nim	incRecPathCounter	loony/node.html#incRecPathCounter.t	template incRecPathCounter(): untyped		55
+nim	incEnqCounter	loony/node.html#incEnqCounter.t	template incEnqCounter(): untyped		56
+nim	incDeqCounter	loony/node.html#incDeqCounter.t	template incDeqCounter(): untyped		57
+nim	incEnqPathCounter	loony/node.html#incEnqPathCounter.t	template incEnqPathCounter(): untyped		58
+nim	incDeqPathCounter	loony/node.html#incDeqPathCounter.t	template incDeqPathCounter(): untyped		59
+nim	prn	loony/node.html#prn.t,uint16	template prn(idx: uint16): uint16		72
+nim	toNodePtr	loony/node.html#toNodePtr.t	template toNodePtr(pt: uint | ptr Node): NodePtr		83
+nim	toNode	loony/node.html#toNode.t	template toNode(pt: NodePtr | uint): Node		86
+nim	toUInt	loony/node.html#toUInt.t,Node	template toUInt(node: var Node): uint		89
+nim	toUInt	loony/node.html#toUInt.t,ptr.Node	template toUInt(nodeptr: ptr Node): uint		92
+nim	prepareElement	loony/node.html#prepareElement,T	proc prepareElement[T](el: var T): uint		96
+nim	fetchNext	loony/node.html#fetchNext,NodePtr,MemoryOrder	proc fetchNext(node: NodePtr; moorder: MemoryOrder): NodePtr		108
+nim	fetchAddSlot	loony/node.html#fetchAddSlot,Node,uint16,uint,MemoryOrder	proc fetchAddSlot(t: var Node; idx: uint16; w: uint; moorder: MemoryOrder): uint		112
+nim	compareAndSwapNext	loony/node.html#compareAndSwapNext,Node,uint,uint	proc compareAndSwapNext(t: var Node; expect: var uint; swap: uint): bool		121
+nim	compareAndSwapNext	loony/node.html#compareAndSwapNext,NodePtr,uint,uint	proc compareAndSwapNext(t: NodePtr; expect: var uint; swap: uint): bool		124
+nim	`=destroy`	loony/node.html#=destroy,Node	proc `=destroy`(n: var Node)		127
+nim	deallocNode	loony/node.html#deallocNode,ptr.Node	proc deallocNode(n: ptr Node)		130
+nim	allocNode	loony/node.html#allocNode	proc allocNode(): ptr Node		134
+nim	allocNode	loony/node.html#allocNode,T	proc allocNode[T](pel: T): ptr Node		138
+nim	tryReclaim	loony/node.html#tryReclaim,Node,uint16	proc tryReclaim(node: var Node; start: uint16)		142
+nim	incrEnqCount	loony/node.html#incrEnqCount,Node,uint16	proc incrEnqCount(node: var Node; final: uint16 = 0)		156
+nim	incrDeqCount	loony/node.html#incrDeqCount,Node,uint16	proc incrDeqCount(node: var Node; final: uint16 = 0)		170
+nimgrp	allocnode	loony/node.html#allocNode-procs-all	proc		134
+nimgrp	compareandswapnext	loony/node.html#compareAndSwapNext-procs-all	proc		121
+nimgrp	touint	loony/node.html#toUInt-templates-all	template		89

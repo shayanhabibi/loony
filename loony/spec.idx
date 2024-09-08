@@ -1,0 +1,32 @@
+nimTitle	spec	loony/spec.html	module loony/spec		0
+nim	loonyNodeAlignment	loony/spec.html#loonyNodeAlignment	const loonyNodeAlignment		4
+nim	loonySlotCount	loony/spec.html#loonySlotCount	const loonySlotCount		5
+nim	loonyIsolated	loony/spec.html#loonyIsolated	const loonyIsolated		7
+nim	loonyRotate	loony/spec.html#loonyRotate	const loonyRotate		12
+nim	lShiftBits	loony/spec.html#lShiftBits	const lShiftBits		21
+nim	rShiftBits	loony/spec.html#rShiftBits	const rShiftBits		22
+nim	UNINIT	loony/spec.html#UNINIT	const UNINIT		37
+nim	RESUME	loony/spec.html#RESUME	const RESUME		38
+nim	WRITER	loony/spec.html#WRITER	const WRITER		39
+nim	READER	loony/spec.html#READER	const READER		40
+nim	CONSUMED	loony/spec.html#CONSUMED	const CONSUMED		41
+nim	SLOT	loony/spec.html#SLOT	const SLOT		43
+nim	DEQ	loony/spec.html#DEQ	const DEQ		44
+nim	ENQ	loony/spec.html#ENQ	const ENQ		45
+nim	N	loony/spec.html#N	const N		47
+nim	TAGBITS	loony/spec.html#TAGBITS	const TAGBITS		49
+nim	NODEALIGN	loony/spec.html#NODEALIGN	const NODEALIGN		50
+nim	TAGMASK	loony/spec.html#TAGMASK	const TAGMASK		51
+nim	PTRMASK	loony/spec.html#PTRMASK	const PTRMASK		52
+nim	SHIFT	loony/spec.html#SHIFT	const SHIFT		54
+nim	MASK	loony/spec.html#MASK	const MASK		55
+nim	SLOTMASK	loony/spec.html#SLOTMASK	const SLOTMASK		57
+nim	NodePtr	loony/spec.html#NodePtr	type NodePtr		60
+nim	TagPtr	loony/spec.html#TagPtr	type TagPtr		61
+nim	ControlMask	loony/spec.html#ControlMask	type ControlMask		64
+nim	ControlBlock	loony/spec.html#ControlBlock	object ControlBlock		67
+nim	getHigh	loony/spec.html#getHigh,ControlMask	proc getHigh(mask: ControlMask): uint16		78
+nim	getLow	loony/spec.html#getLow,ControlMask	proc getLow(mask: ControlMask): uint16		81
+nim	fetchAddTail	loony/spec.html#fetchAddTail,ControlBlock,uint32	proc fetchAddTail(ctrl: var ControlBlock; v: uint32 = 1): ControlMask		84
+nim	fetchAddHead	loony/spec.html#fetchAddHead,ControlBlock,uint32	proc fetchAddHead(ctrl: var ControlBlock; v: uint32 = 1): ControlMask		87
+nim	fetchAddReclaim	loony/spec.html#fetchAddReclaim,ControlBlock,uint8	proc fetchAddReclaim(ctrl: var ControlBlock; v: uint8 = 1): uint8		90

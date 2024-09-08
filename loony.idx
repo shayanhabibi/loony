@@ -1,0 +1,14 @@
+nimTitle	loony	loony.html	module loony		0
+nim	LoonyQueue	loony.html#LoonyQueue	type LoonyQueue		26
+nim	LoonyQueueImpl	loony.html#LoonyQueueImpl	object LoonyQueueImpl		27
+nim	toStrTuple	loony.html#toStrTuple,TagPtr	proc toStrTuple(tag: TagPtr): string		63
+nim	`=destroy`	loony.html#=destroy,LoonyQueueImpl[T]	proc `=destroy`[T](x: var LoonyQueueImpl[T])		98
+nim	push	loony.html#push,LoonyQueue[T],sinkT	proc push[T](queue: LoonyQueue[T]; el: sink T)		333
+nim	unsafePush	loony.html#unsafePush,LoonyQueue[T],sinkT	proc unsafePush[T](queue: LoonyQueue[T]; el: sink T)		340
+nim	isEmpty	loony.html#isEmpty,LoonyQueue	proc isEmpty(queue: LoonyQueue): bool		353
+nim	pop	loony.html#pop,LoonyQueue[T]	proc pop[T](queue: LoonyQueue[T]): T		420
+nim	unsafePop	loony.html#unsafePop,LoonyQueue[T]	proc unsafePop[T](queue: LoonyQueue[T]): T		427
+nim	initLoonyQueue	loony.html#initLoonyQueue,LoonyQueue	proc initLoonyQueue(q: LoonyQueue)		453
+nim	initLoonyQueue	loony.html#initLoonyQueue	proc initLoonyQueue[T](): LoonyQueue[T]		467
+nim	newLoonyQueue	loony.html#newLoonyQueue	proc newLoonyQueue[T](): LoonyQueue[T]		473
+nimgrp	initloonyqueue	loony.html#initLoonyQueue-procs-all	proc		453

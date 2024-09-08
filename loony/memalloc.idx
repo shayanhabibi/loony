@@ -1,0 +1,4 @@
+nimTitle	memalloc	loony/memalloc.html	module loony/memalloc		0
+nim	allocAligned	loony/memalloc.html#allocAligned,Natural,Natural	proc allocAligned(size, align: Natural): pointer		35
+nim	allocAligned0	loony/memalloc.html#allocAligned0,Natural,Natural	proc allocAligned0(size, align: Natural): pointer		55
+nim	deallocAligned	loony/memalloc.html#deallocAligned,pointer,int	proc deallocAligned(p: pointer; align: int)		71
