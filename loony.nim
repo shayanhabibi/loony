@@ -25,9 +25,16 @@ type
 
   LoonyQueue*[T] = ref LoonyQueueImpl[T]
   LoonyQueueImpl*[T] = object
-    head     : Atomic[TagPtr]     ## Whereby node contains the slots and idx
-    tail     : Atomic[TagPtr]     ## is the uint16 index of the slot array
-    currTail : Atomic[NodePtr]    ## 8 bytes Current NodePtr
+    head     {.align: 128.}: Atomic[TagPtr]     ## Whereby node contains the slots and idx
+    tail     {.align: 128.}: Atomic[TagPtr]     ## is the uint16 index of the slot array
+    currTail {.align: 128.}: Atomic[NodePtr]    ## 8 bytes Current NodePtr
+  # Align to 128 bytes to avoid false sharing, see:
+  # https://stackoverflow.com/questions/72126606/should-the-cache-padding-size-of-x86-64-be-128-bytes
+  # Plenty of architectural differences can impact whether
+  # or not 128 bytes is superior alignment to 64 bytes, but
+  # considering the cost that this change introduces to the
+  # memory consumption of the loony queue object, it is
+  # recommended.
 
   ## Result types for the private
   ## advHead and advTail functions

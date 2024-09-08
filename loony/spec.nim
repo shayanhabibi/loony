@@ -1,17 +1,36 @@
-import std/atomics
+import std/[atomics, math, strformat]
 
 const
-  loonyNodeAlignment {.intdefine.} = 11
-  loonySlotCount {.intdefine.} = 1024
+  loonyNodeAlignment* {.intdefine.} = 11
+  loonySlotCount* {.intdefine.} = 1024
 
   loonyIsolated* {.booldefine.} = false  ## Indicate that loony should
   ## assert that all references passing through the queue have a single
   ## owner.  Note that in particular, child Continuations have cycles,
   ## which will trigger a failure of this assertion.
 
+  loonyRotate* {.booldefine.} = true ## Indicate that loony should rotate
+  ## the slots in the queue to avoid contention on the same cache line.
+  ## This is useful when the queue is shared between multiple threads.
+  ## Note that this will only work if the number of slots is a power of 2.
+
+when loonyRotate:
+  # TODO Impl dynamic cache line size detection
+  const
+    cacheLineSize = 64
+    lShiftBits* = int log2(float cacheLineSize)
+    rShiftBits* = int(log2(float loonySlotCount)) - lShiftBits
+
 static:
   doAssert (1 shl loonyNodeAlignment) > loonySlotCount,
     "Your LoonySlot count exceeds your alignment!"
+  doAssert loonySlotCount > 1,
+    "Your LoonySlot count must be greater than 1!"
+  when loonyRotate:
+    doAssert (loonySlotCount and (loonySlotCount - 1)) == 0,
+      fmt"Your LoonySlot count of {loonySlotCount} is not a power of 2!" &
+      " Either disable loonyRotate (-d:loonyRotate=false) or" &
+      " change the slot count."
 
 const
   ## Slot flag constants
