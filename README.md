@@ -17,7 +17,7 @@
 >
 >*"We didn't have a good story about migrating continuations between threads." - Disruptek*
 
-Have you ever asked yourself what would a lock-free MPMC queue look like in nim?
+Have you ever asked yourself what would a lock-free MPMC (*multi-producer multi-consumer*) queue looks like in Nim?
 
 What about a lock-free MPMC queue designed on an algorithm built for speed and memory safety?
 
@@ -41,7 +41,7 @@ and Portable Concurrent FIFO Queues With Deterministic Memory Reclamation"](pape
 
 The algorithm was chosen to help progress the concurrency story of [CPS](https://github.com/nim-works/cps) for which this was bespokingly made.
 
-After adapting the algorithm to nim CPS, disruptek adapted the queue for **any ref object** and was instrumental in ironing out the bugs and improving the performance of Loony.
+After adapting the algorithm to Nim CPS, disruptek adapted the queue for **any ref object** and was instrumental in ironing out the bugs and improving the performance of Loony.
 
 ## What can it do
 
@@ -65,7 +65,8 @@ With the 11 bit aligned implementation we have:
 
 ORC is not supported (See [Issue #4](https://github.com/shayanhabibi/loony/issues/4))
 
-Spawn (Nims `threadpool` module) is not supported. *It won't ever be; don't use spawn unless you are a masochist in general.*
+Spawn (via Nim's `threadpool` module) is not supported. *It won't ever be; don't use spawn unless you are a masochist in general.*
+
 ## Installation
 
 Download with `nimble install loony` (CPS dependency for tests) or directly from the source.
